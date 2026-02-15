@@ -1,0 +1,205 @@
+==========================================================
+Course Selection System - Detailed ER 文檔
+檔名：CourseSelectionSystem_ER_Detailed.txt
+說明：選課系統資料庫 ER 設計文字檔，含表格、欄位、主鍵、外鍵、關聯與註解。
+==========================================================
+
+──────────────────────────────
+1. departments (系所表)
+──────────────────────────────
+用途：儲存系所基本資料
+欄位：
+  id          INT PK AUTO_INCREMENT             -- 系所ID，主鍵，自動遞增
+  code        NVARCHAR(20) NOT NULL UNIQUE      -- 系所代碼
+  name        NVARCHAR(100) NOT NULL            -- 系所名稱
+  created_at  DATETIME DEFAULT GETDATE()        -- 建立時間
+  updated_at  DATETIME DEFAULT GETDATE()        -- 更新時間
+關聯：
+  PK: id
+  1:N -> students.department_id
+  1:N -> teachers.department_id
+  1:N -> courses.department_id
+
+──────────────────────────────
+2. students (學生表)
+──────────────────────────────
+用途：儲存學生資料
+欄位：
+  id            INT PK AUTO_INCREMENT          -- 學生ID
+  student_no    NVARCHAR(20) NOT NULL UNIQUE   -- 學號
+  name          NVARCHAR(100) NOT NULL         -- 姓名
+  email         NVARCHAR(100) UNIQUE           -- 電子信箱
+  phone         NVARCHAR(20)                    -- 電話
+  department_id INT NOT NULL FK -> departments(id) -- 所屬系所
+  grade         INT                              -- 年級
+  status        NVARCHAR(20) DEFAULT 'active'   -- 狀態: active/leave/graduated
+  created_at    DATETIME DEFAULT GETDATE()
+  updated_at    DATETIME DEFAULT GETDATE()
+關聯：
+  PK: id
+  FK: department_id -> departments.id
+  1:N -> enrollments.student_id
+
+──────────────────────────────
+3. teachers (教師表)
+──────────────────────────────
+用途：儲存教師資料
+欄位：
+  id            INT PK AUTO_INCREMENT          -- 教師ID
+  teacher_no    NVARCHAR(20) NOT NULL UNIQUE   -- 教師編號
+  name          NVARCHAR(100) NOT NULL         -- 姓名
+  email         NVARCHAR(100) UNIQUE           -- 電子信箱
+  department_id INT NOT NULL FK -> departments(id) -- 所屬系所
+  title         NVARCHAR(50)                     -- 職稱
+  created_at    DATETIME DEFAULT GETDATE()
+  updated_at    DATETIME DEFAULT GETDATE()
+關聯：
+  PK: id
+  FK: department_id -> departments.id
+  1:N -> course_sections.teacher_id
+
+──────────────────────────────
+4. courses (課程主檔)
+──────────────────────────────
+用途：課程模板資料
+欄位：
+  id             INT PK AUTO_INCREMENT           -- 課程ID
+  course_code    NVARCHAR(20) NOT NULL UNIQUE    -- 課程代碼
+  name           NVARCHAR(100) NOT NULL          -- 課程名稱
+  credits        INT NOT NULL                     -- 學分
+  department_id  INT NOT NULL FK -> departments(id) -- 開課系所
+  description    NVARCHAR(MAX)                   -- 課程說明
+  required_type  NVARCHAR(20)                    -- 必修/選修
+  created_at     DATETIME DEFAULT GETDATE()
+  updated_at     DATETIME DEFAULT GETDATE()
+關聯：
+  PK: id
+  FK: department_id -> departments.id
+  1:N -> course_sections.course_id
+  1:N -> course_prerequisites.course_id
+  1:N -> course_prerequisites.prerequisite_course_id
+
+──────────────────────────────
+5. semesters (學期表)
+──────────────────────────────
+用途：儲存學期資料
+欄位：
+  id             INT PK AUTO_INCREMENT          -- 學期ID
+  academic_year  INT NOT NULL                     -- 學年度
+  term           INT NOT NULL                     -- 學期1=上,2=下
+  start_date     DATE
+  end_date       DATE
+關聯：
+  PK: id
+  1:N -> course_sections.semester_id
+
+──────────────────────────────
+6. classrooms (教室表)
+──────────────────────────────
+用途：儲存教室資料
+欄位：
+  id            INT PK AUTO_INCREMENT           -- 教室ID
+  building      NVARCHAR(50) NOT NULL           -- 大樓名稱
+  room_number   NVARCHAR(20) NOT NULL           -- 教室號碼
+  capacity      INT NOT NULL                     -- 容量
+關聯：
+  PK: id
+  1:N -> course_sections.classroom_id
+
+──────────────────────────────
+7. course_sections (開課表)
+──────────────────────────────
+用途：儲存實際開課資料
+欄位：
+  id             INT PK AUTO_INCREMENT          -- 開課ID
+  course_id      INT NOT NULL FK -> courses(id) -- 課程ID
+  semester_id    INT NOT NULL FK -> semesters(id) -- 學期ID
+  section_code   NVARCHAR(10) NOT NULL           -- 班別代碼
+  teacher_id     INT NOT NULL FK -> teachers(id) -- 授課教師
+  classroom_id   INT NOT NULL FK -> classrooms(id) -- 上課教室
+  max_students   INT NOT NULL                     -- 人數上限
+  status         NVARCHAR(20) DEFAULT 'open'     -- 開課狀態
+關聯：
+  PK: id
+  FK: course_id -> courses.id
+  FK: semester_id -> semesters.id
+  FK: teacher_id -> teachers.id
+  FK: classroom_id -> classrooms.id
+  1:N -> course_schedules.course_section_id
+  1:N -> enrollments.course_section_id
+
+──────────────────────────────
+8. course_schedules (課程時段)
+──────────────────────────────
+用途：課程上課時段
+欄位：
+  id                INT PK AUTO_INCREMENT
+  course_section_id INT NOT NULL FK -> course_sections(id)
+  weekday           INT NOT NULL                   -- 星期1~7
+  start_period      INT NOT NULL                   -- 開始節次
+  end_period        INT NOT NULL                   -- 結束節次
+關聯：
+  PK: id
+  FK: course_section_id -> course_sections.id
+
+──────────────────────────────
+9. enrollments (選課表)
+──────────────────────────────
+用途：學生選課紀錄
+欄位：
+  id                INT PK AUTO_INCREMENT
+  student_id        INT NOT NULL FK -> students(id)
+  course_section_id INT NOT NULL FK -> course_sections(id)
+  status            NVARCHAR(20) DEFAULT 'enrolled'
+  enrolled_at       DATETIME DEFAULT GETDATE()
+關聯：
+  PK: id
+  FK: student_id -> students.id
+  FK: course_section_id -> course_sections.id
+  1:N -> grades.enrollment_id
+
+──────────────────────────────
+10. grades (成績表)
+──────────────────────────────
+用途：學生成績
+欄位：
+  id            INT PK AUTO_INCREMENT
+  enrollment_id INT NOT NULL FK -> enrollments(id)
+  grade_type    NVARCHAR(20) NOT NULL            -- 期中/期末等
+  score         DECIMAL(5,2)                      -- 0~100
+關聯：
+  PK: id
+  FK: enrollment_id -> enrollments.id
+
+──────────────────────────────
+11. course_prerequisites (先修課表)
+──────────────────────────────
+用途：課程先修關聯
+欄位：
+  id                     INT PK AUTO_INCREMENT
+  course_id              INT NOT NULL FK -> courses(id)
+  prerequisite_course_id INT NOT NULL FK -> courses(id)
+關聯：
+  PK: id
+  FK: course_id -> courses.id
+  FK: prerequisite_course_id -> courses.id
+
+==========================================================
+關聯總覽 (PK/FK/1:N)
+==========================================================
+departments.id  -> students.department_id
+departments.id  -> teachers.department_id
+departments.id  -> courses.department_id
+
+students.id -> enrollments.student_id
+teachers.id -> course_sections.teacher_id
+courses.id -> course_sections.course_id
+courses.id -> course_prerequisites.course_id
+courses.id -> course_prerequisites.prerequisite_course_id
+semesters.id -> course_sections.semester_id
+classrooms.id -> course_sections.classroom_id
+course_sections.id -> course_schedules.course_section_id
+course_sections.id -> enrollments.course_section_id
+enrollments.id -> grades.enrollment_id
+
+==========================================================

@@ -1,0 +1,56 @@
+1. CourseSelection_DB_Create_01.sql
+功能： 建立資料庫與核心資料表結構
+- 建立 CourseSelectionSystem 資料庫
+- 建立主要資料表：departments、students、teachers、courses 等
+- 設定欄位型態、主鍵、外鍵、NOT NULL 等約束
+用途：初始化資料庫架構，是整個系統的基礎
+
+
+2. CourseSelection_ExtendedProperties_02.sql
+功能： 設定資料表與欄位的擴充屬性（註解）
+- 利用 SQL Server 的 sp_addextendedproperty 或類似語法
+- 註解每個欄位用途、資料格式、單位或限制
+用途：方便開發、維護與自動文件生成
+
+
+3. CourseSelection_SeedData_03.sql
+功能： 插入靜態種子資料
+- 插入大量測試資料：
+  - 系所、學生、教師、課程
+  - 學期、教室、課程班別、課程時段
+  - 學生選課紀錄、成績、先修課、帳號
+用途：模擬完整選課系統環境，用於測試或開發
+
+
+4. CourseSelection_Engine_04.sql
+功能： 核心邏輯與規則判斷
+- 驗證選課邏輯：先修課檢查、衝堂檢查、最大人數限制
+- 計算成績或學分檢查
+用途：實現系統核心運算邏輯，是選課流程的心臟
+
+
+5. CourseSelection_StoredProcedures_05.sql
+功能： 定義儲存程序（Stored Procedures, SP）
+- 常見 SP：
+  - 學生選課/退選
+  - 查詢學生課表或成績
+  - 課程班別安排
+用途：封裝核心功能，便於系統呼叫與維護
+
+
+6. CourseSelection_TestData_06.sql
+功能： 測試腳本
+- 建立模擬案例、邏輯測試、邊界測試
+- 包含：
+  - 特殊選課情境（衝堂、先修不足）
+  - 成績計算、GPA驗證
+用途：驗證系統功能正確性
+
+
+7. CourseSelection_Query_07.sql
+功能： 查詢與報表
+- 常用查詢：
+  - 學生課表
+  - 課程選課人數
+  - 成績報表與統計
+用途：提供管理端或學生端報表功能

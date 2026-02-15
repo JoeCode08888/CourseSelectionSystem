@@ -1,0 +1,149 @@
+erDiagram
+    %% 設定方向
+    direction LR
+
+    %% 系統設定表 (system_settings) - 儲存系統設定資料
+    SYSTEM_SETTINGS {
+        nvarchar setting_name "設定名稱 (例如: max_credit_per_semester)"
+        int setting_value "設定學分限制 (最高學分:25 最低學分:9)"
+    }
+
+    %% 系所表 (departments) - 儲存所有系所基本資料
+    DEPARTMENTS {
+        int id "主鍵，系所唯一識別碼，自動遞增"
+        nvarchar code "系所代碼，不可重複"
+        nvarchar name "系所名稱"
+        datetime created_at "建立時間"
+        datetime updated_at "更新時間"
+    }
+
+    %% 學生表 (students) - 儲存學生基本資料
+    STUDENTS {
+        int id "主鍵，學生ID"
+        nvarchar student_no "學號，唯一不可重複"
+        nvarchar name "學生姓名"
+        nvarchar email "電子信箱"
+        nvarchar phone "聯絡電話"
+        int department_id "外鍵，對應 departments.id"
+        int grade "年級"
+        nvarchar status "學生狀態"
+        datetime created_at
+        datetime updated_at
+    }
+
+    %% 教師表 (teachers) - 儲存教師資料
+    TEACHERS {
+        int id "主鍵，教師ID"
+        nvarchar teacher_no "教師編號，不可重複"
+        nvarchar name "教師姓名"
+        nvarchar email "電子信箱"
+        int department_id "外鍵，對應 departments.id"
+        nvarchar title "職稱"
+        datetime created_at
+        datetime updated_at
+    }
+
+    %% 課程表 (courses) - 儲存課程基本資料
+    COURSES {
+        int id "主鍵，課程ID"
+        nvarchar course_code "課程代碼，不可重複"
+        nvarchar name "課程名稱"
+        int credits "學分數"
+        int department_id "外鍵，對應 departments.id"
+        nvarchar description "課程說明"
+        nvarchar required_type "必修或選修"
+        datetime created_at
+        datetime updated_at
+    }
+
+    %% 學期表 (semesters) - 儲存學期資訊
+    SEMESTERS {
+        int id "主鍵，學期ID"
+        int academic_year "學年度"
+        int term "學期 (1=上,2=下)"
+        date start_date "開始日期"
+        date end_date "結束日期"
+    }
+
+    %% 教室表 (classrooms) - 儲存教室資料
+    CLASSROOMS {
+        int id "主鍵，教室ID"
+        nvarchar building "大樓名稱"
+        nvarchar room_number "教室編號"
+        int capacity "容量"
+    }
+
+    %% 開課表 (course_sections) - 儲存實際開課資料
+    COURSE_SECTIONS {
+        int id "主鍵，開課ID"
+        int course_id "外鍵，對應 courses.id"
+        int semester_id "外鍵，對應 semesters.id"
+        nvarchar section_code "班別代碼"
+        int teacher_id "外鍵，對應 teachers.id"
+        int classroom_id "外鍵，對應 classrooms.id"
+        int max_students "人數上限"
+        nvarchar status "開課狀態"
+        datetime created_at
+        datetime updated_at
+    }
+
+    %% 課程時段表 (course_schedules) - 儲存課程的時段
+    COURSE_SCHEDULES {
+        int id "主鍵，時段ID"
+        int course_section_id "外鍵，對應 course_sections.id"
+        int weekday "星期 1~7"
+        int start_period "開始節次"
+        int end_period "結束節次"
+    }
+
+    %% 選課表 (enrollments) - 儲存學生選課資料
+    ENROLLMENTS {
+        int id "主鍵，選課ID"
+        int student_id "外鍵，對應 students.id"
+        int course_section_id "外鍵，對應 course_sections.id"
+        nvarchar status "選課狀態"
+        datetime enrolled_at "選課時間"
+    }
+
+    %% 成績表 (grades) - 儲存學生的成績
+    GRADES {
+        int id "主鍵，成績ID"
+        int enrollment_id "外鍵，對應 enrollments.id"
+        nvarchar grade_type "成績類型"
+        decimal score "成績分數 0~100"
+    }
+
+    %% 先修課表 (course_prerequisites) - 儲存課程的先修課程資料
+    COURSE_PREREQUISITES {
+        int id "主鍵"
+        int course_id "主課程ID"
+        int prerequisite_course_id "先修課程ID"
+    }
+
+    %% 帳號表 (accounts) - 儲存學生登入資訊
+    ACCOUNTS {
+        int id "主鍵，帳號ID"
+        int student_id "外鍵，對應 students.id"
+        nvarchar username "登入帳號"
+        nvarchar password_hash "密碼雜湊"
+        datetime created_at "建立時間"
+        datetime updated_at "更新時間"
+    }
+
+    %% 關聯
+    DEPARTMENTS ||--o{ STUDENTS : "1:N"
+    DEPARTMENTS ||--o{ TEACHERS : "1:N"
+    DEPARTMENTS ||--o{ COURSES : "1:N"
+
+    COURSES ||--o{ COURSE_SECTIONS : "1:N"
+    SEMESTERS ||--o{ COURSE_SECTIONS : "1:N"
+    TEACHERS ||--o{ COURSE_SECTIONS : "1:N"
+    CLASSROOMS ||--o{ COURSE_SECTIONS : "1:N"
+
+    COURSE_SECTIONS ||--o{ COURSE_SCHEDULES : "1:N"
+    STUDENTS ||--o{ ENROLLMENTS : "1:N"
+    COURSE_SECTIONS ||--o{ ENROLLMENTS : "1:N"
+    ENROLLMENTS ||--o{ GRADES : "1:N"
+
+    COURSES ||--o{ COURSE_PREREQUISITES : "0:N"
+    STUDENTS ||--o{ ACCOUNTS : "1:1"
